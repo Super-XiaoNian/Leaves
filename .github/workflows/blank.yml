@@ -33,8 +33,26 @@ jobs:
           distribution: 'temurin'
           cache: maven
           
-      - name: 修修补补
-        run: gradle applyPatches
-        
-      - name: 打包jar
-        run: gradle createReobfBundlerJar
+          
+      - name: Clone full leaves repository
+        run: |
+          git config --global user.email "git@github.com"
+          git config --global user.name "Actions-Runner"
+          git clone "https://github.com/LeavesMC/Leaves" repository
+          
+      - name: Build now
+        run: |
+          cd repository
+          chmod +x gradlew
+          ./gradlew applyPatches
+
+      - name: Compress files
+        uses: edgarrc/action-7z@v1
+        with:
+          args: 7z a -t7z -mx=9 repository.7z ./repository/leaves-api/ ./repository/leaves-server/
+
+      - name: Upload the zipped file
+        uses: actions/upload-artifact@v3
+        with:
+          name: Source (Unzip 2 times)
+          path: repository.7z
